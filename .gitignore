@@ -1,0 +1,8 @@
+build/
+WebContent/
+.classpath
+.project
+.settings/
+*.swp
+*.swo
+*.tmp
