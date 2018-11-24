@@ -3,25 +3,34 @@
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.*;
-import org.json.simple.*; 
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+
+
 /**
- * Servlet implementation class Login
+ * Servlet implementation class TrekImage
  */
-@WebServlet("/Login")
-public class Login extends HttpServlet {
+@WebServlet("/TrekImage")
+public class TrekImage extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public Login() {
+	public static ObjectMapper mapper = new ObjectMapper();
+    public TrekImage() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -31,43 +40,36 @@ public class Login extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
+//		response.getWriter().append("Served at: ").append(request.getContextPath());
+		
 		response.setContentType("application/json");
 		PrintWriter out = response.getWriter();
-		String email = request.getParameter("email");
-		String password = request.getParameter("password");
+//		int uid=Integer.parseInt(request.getParameter("uid").toString());
+		int trek_id=Integer.parseInt(request.getParameter("trek_id").toString());
+		// verify uid 
+		ObjectNode obj = mapper.createObjectNode();
 		try(Connection conn=DriverManager.getConnection(Config.url,Config.user,Config.password); ){
-//			System.out.println("first");
-			PreparedStatement stmt=conn.prepareStatement("select uid,name from users where email=? and pass=?");
-			stmt.setString(1, email);
-			stmt.setString(2, password);
-//			System.out.println("second");
+			// connection established 
+			PreparedStatement stmt=conn.prepareStatement("select img_data,extension from trek t,images i where t.trek_id=? and i.img_id=t.map_img");
+			stmt.setInt(1, trek_id);
 			ResultSet rs=stmt.executeQuery();
-//			System.out.println("third");
 			if(rs.next()) {
-				int uid=rs.getInt(1);
-				String name=rs.getString(2); 
-//				System.out.println(name);
-				JSONObject json=new JSONObject();
-				json.put("status","success");
-				json.put("uid", uid);
-				json.put("name",name); 
-				out.print(json);
+				obj.put("status", "success");
+				obj.put("img_data", rs.getString(1));
+				obj.put("extension", rs.getString(2)); 
 			}
-			else { 
-				JSONObject json=new JSONObject();
-				json.put("status","fail");
-				json.put("message", "wrong credentials");
-				out.print(json);
+			else {
+				obj.put("status", "fail");
+				obj.put("message", "image not available");
 			}
+			out.print(obj); return; 
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-			JSONObject json=new JSONObject();
-			json.put("status","fail");
-			json.put("message", "database error");
-			out.print(json);
+			obj.put("status", "fails"); 
+			obj.put("message", "database error"); 
+			out.print(obj); return; 
 		}
-		
 	}
 
 	/**

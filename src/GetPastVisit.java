@@ -39,15 +39,16 @@ public class GetPastVisit extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		/*HttpSession session = request.getSession();
-		if(session.getAttribute("id") == null) { //not logged in
+		HttpSession session = request.getSession();
+		if(request.getParameter("uid") == null) { //not logged in
 			response.getWriter().print(Helper.errorJson("Not logged in").toString());
 			return;
 		}
-		int uid = Integer.parseInt(session.getAttribute("id").toString());*/
-		int uid = 3;
+		int uid = Integer.parseInt(request.getParameter("uid").toString());
+//		int uid = 1;
 		
-		String query = "select place_name from visit v, trek_place p where uid=? and p.place_id = v.place_id;";
+//		String query = "select place_name from visit v, trek_place p where uid=? and p.place_id = v.place_id;";
+		String query=" select DISTINCT t.name,p.trek_id from visit  v, trek_place p, trek t where uid=? and p.place_id = v.place_id and t.trek_id=p.trek_id";
 		ArrayNode json = null;
 		try (Connection conn = DriverManager.getConnection(Config.url, Config.user, Config.password))
         {
@@ -56,7 +57,8 @@ public class GetPastVisit extends HttpServlet {
 //            	setParams(stmt, paramTypes, params);
             	stmt.setInt(1, uid);
                 ResultSet rs = stmt.executeQuery();
-                json = Helper.resultSetToJson(rs);
+                Helper.PairIA ret = Helper.resultSetToJson(rs);
+                json=ret.arr; 
                 conn.commit();
             }
             catch(Exception ex)

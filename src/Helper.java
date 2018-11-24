@@ -13,7 +13,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+ 
+
 public class Helper {
+	public static class PairIA{
+		int cnt; 
+		ArrayNode arr; 
+	}
 	public static final String DATA_LABEL = "data";
 	public static final String MSG_LABEL = "message";
 	public static final String STATUS_LABEL = "status";
@@ -22,7 +28,7 @@ public class Helper {
 	
 	public static ObjectNode errorJson(String errorMsg) {
 		ObjectNode node = mapper.createObjectNode();
-		node.put(STATUS_LABEL, false);
+		node.put(STATUS_LABEL, "fail");
 		node.put(MSG_LABEL, errorMsg);
 		return node;
 	}
@@ -31,11 +37,13 @@ public class Helper {
 	 * Returns the results as a JSON array object.
 	 * Use toString() on the result to get JSON string.
 	 */
-	public static ArrayNode resultSetToJson(ResultSet rs) throws SQLException {
+	public static PairIA resultSetToJson(ResultSet rs) throws SQLException {
 		ArrayNode arr = mapper.createArrayNode();
 
 		ResultSetMetaData rsmd = rs.getMetaData();
+		int cnt=0;
 		while(rs.next()) {
+			cnt++;
 			int numColumns = rsmd.getColumnCount();
 			ObjectNode obj = mapper.createObjectNode();
 			
@@ -85,6 +93,9 @@ public class Helper {
 			}
 			arr.add(obj);
 		}
-		return arr;
+		PairIA ret=new PairIA(); 
+		ret.cnt=cnt; 
+		ret.arr=arr; 
+		return ret; 
 	}
 }

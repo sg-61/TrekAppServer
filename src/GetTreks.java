@@ -13,8 +13,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -52,7 +52,12 @@ public class GetTreks extends HttpServlet {
             try(PreparedStatement stmt = conn.prepareStatement(query)) {
 //            	setParams(stmt, paramTypes, params);
                 ResultSet rs = stmt.executeQuery();
-                json = Helper.resultSetToJson(rs);
+                Helper.PairIA ret = Helper.resultSetToJson(rs);
+//                if(ret.cnt==0) {
+//                	response.getWriter().print(Helper.errorJson("invalid uid").toString());
+//                	return; 
+//                }
+                json = ret.arr; 
                 conn.commit();
             }
             catch(Exception ex)

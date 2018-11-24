@@ -7,4 +7,5 @@ public class Config {
 	public static final String user = "postgres";
 	public static final String password = "pass1234";
 	public static final String dd="xxxxxxxx"; 
+  public static final String user_mail="xxxxxxxx"; 
 }

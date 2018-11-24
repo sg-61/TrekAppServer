@@ -38,25 +38,28 @@ public class TrekData extends HttpServlet {
 		// TODO Auto-generated method stub
 		response.setContentType("application/json");
 		PrintWriter out = response.getWriter();
-		int uid=Integer.parseInt(request.getParameter("uid").toString());
+//		int uid=Integer.parseInt(request.getParameter("uid").toString());
 		int trek_id=Integer.parseInt(request.getParameter("trek_id").toString());
-		// verify uid 
+		// check if this trek_id is present in database 
 		JSONObject json=new JSONObject();
+		
+		
 		try(Connection conn=DriverManager.getConnection(Config.url,Config.user,Config.password); ){
-			// connection established 
+			// connection established
+			
 			PreparedStatement stmt=conn.prepareStatement("select * from trek where trek_id=?");
 			stmt.setInt(1, trek_id);
 			ResultSet trek_rs=stmt.executeQuery(); 
 			if(trek_rs.next()) {
 				json.put("name",trek_rs.getString(1));
-				int img_id=trek_rs.getInt(2); 
-				PreparedStatement img_data=conn.prepareStatement("select img_data from images where img_id=?");
-				img_data.setInt(1, img_id); 
-				ResultSet img_data_rs=img_data.executeQuery();
-				if(img_data_rs.next()) {
-					json.put("img",img_data_rs.getString(1) );
-				}
-				PreparedStatement cord=conn.prepareStatement("select * from co_ordinates where trek_id=?");
+//				int img_id=trek_rs.getInt(2); 
+//				PreparedStatement img_data=conn.prepareStatement("select img_data from images where img_id=?");
+//				img_data.setInt(1, img_id); 
+//				ResultSet img_data_rs=img_data.executeQuery();
+//				if(img_data_rs.next()) {
+//					json.put("img",img_data_rs.getString(1) );
+//				}
+				PreparedStatement cord=conn.prepareStatement("select lattitude,longitude,co_ordinate_id from co_ordinates where trek_id=?");
 				cord.setInt(1, trek_id);
 				ResultSet cord_rs=cord.executeQuery();
 				JSONArray cord_obj= new JSONArray(); 
@@ -64,36 +67,61 @@ public class TrekData extends HttpServlet {
 					JSONObject tt=new JSONObject(); 
 					tt.put("lattitude",cord_rs.getFloat(1));
 					tt.put("longitude",cord_rs.getFloat(2));
+					tt.put("id", cord_rs.getFloat(3));
 					cord_obj.add(tt); 
 				}
 				json.put("co_ordinates", cord_obj);
-				PreparedStatement places=conn.prepareStatement("select * from trek_place where trek_id=?"); 
+				PreparedStatement places=conn.prepareStatement("select p.place_id,p.place_name,p.co_ordinate_id,c.lattitude,c.longitude from trek_place p,co_ordinates c where p.trek_id=? and p.co_ordinate_id=c.co_ordinate_id"); 
 				places.setInt(1, trek_id);
 				ResultSet places_rs=places.executeQuery();
 				JSONArray places_array=new JSONArray(); 
 				while(places_rs.next()) {
 					String name=places_rs.getString(2); 
-					String country=places_rs.getString(2); 
-					int co_id=places_rs.getInt(4); 
-					PreparedStatement get_co=conn.prepareStatement("select * from co_ordinates where co_ordinate_id=?");
-					get_co.setInt(1,co_id); 
-					ResultSet co_rs=get_co.executeQuery();
+//					String country=places_rs.getString(2); 
+					int co_id=places_rs.getInt(3); 
+//					PreparedStatement get_co=conn.prepareStatement("select * from co_ordinates where co_ordinate_id=?");
+//					get_co.setInt(1,co_id); 
+//					ResultSet co_rs=get_co.executeQuery();
 					JSONObject po=new JSONObject();
-					if(co_rs.next()) {
-						po.put("lattitude", co_rs.getFloat(1));
-						po.put("longitude", co_rs.getFloat(2));
-					}
-					places_array.add(po); 
+//					if(co_rs.next()) {
+					po.put("lattitude", places_rs.getFloat(4));
+					po.put("longitude", places_rs.getFloat(5));
+					po.put("name", name); 
+					po.put("co_ordinate_id", co_id);
+					po.put("place_id", places_rs.getInt(1));
+					places_array.add(po);
+//					} 
 				}
 				json.put("places", places_array); 
+				PreparedStatement paths=conn.prepareStatement("select c1.lattitude,c1.longitude,c2.lattitude,c2.longitude,s.count from path_segment s,co_ordinates c1,co_ordinates c2 where s.co_ordinate_id1=c1.co_ordinate_id and s.co_ordinate_id2=c2.co_ordinate_id and c1.trek_id=? and c1.trek_id=c2.trek_id");
+				paths.setInt(1, trek_id);
+				ResultSet paths_rs=paths.executeQuery(); 
+				JSONArray paths_array=new JSONArray(); 
+				while(paths_rs.next()) {
+					JSONObject co=new JSONObject(); 
+					co.put("lattitude1", paths_rs.getFloat(1));
+					co.put("longitude1", paths_rs.getFloat(2));
+					co.put("lattitude2", paths_rs.getFloat(3));
+					co.put("longitude2", paths_rs.getFloat(4));
+					co.put("count", paths_rs.getInt(5));
+					paths_array.add(co); 
+				}
+				json.put("paths",paths_array);
+				json.put("success", "success"); 
 				out.print(json);
 				return; 
 			}
 			else {
+				json.put("status","fail" );
+				json.put("message", "invalid trek_id"); 
+				out.print(json); 
 				// handle not available case
 			}
 		}
 		catch(Exception e) {
+			json.put("status","fail" );
+			json.put("message", "database error"); 
+			out.print(json); 
 			// handle database error here 
 			e.printStackTrace();
 		}

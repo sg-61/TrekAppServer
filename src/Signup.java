@@ -61,11 +61,10 @@ public class Signup extends HttpServlet {
 		String email = request.getParameter("email");
 		String password = request.getParameter("password");
 		String verified= request.getParameter("verified");
-		verified=new String("1"); 
+//		verified=new String("1"); 
 		System.out.println(user_name);
 		System.out.println(email);
 		System.out.println(password);
-		// verify the email part : to be done 
 //		response.getWriter().println("<html><body>hi hello</body></html> ");
 	    try(Connection conn=DriverManager.getConnection(Config.url,Config.user,Config.password); ){
 	    	System.out.println("conn established"); 
@@ -84,14 +83,7 @@ public class Signup extends HttpServlet {
 				else {
 //					System.out.println("hi this is me"); 
 					if(verified.compareTo("1")==0) {
-						System.out.println("going to insert");
-						stmt=conn.prepareStatement("select max(uid) from users"); 
-						rs=stmt.executeQuery(); 
-						int uid=0; 
-						if(rs.next()) {
-							uid=rs.getInt(1); 
-						}
-						uid++; 
+						// it is verified, add to the database  
 						PreparedStatement stmt1=conn.prepareStatement("insert into users (name,pass,email) values (?,?,?);");
 						stmt1.setString(1, user_name);
 						stmt1.setString(2, password);
@@ -100,16 +92,17 @@ public class Signup extends HttpServlet {
 						stmt1.executeUpdate();
 						JSONObject json = new JSONObject();
 						json.put("status","success"); 
-						json.put("message",""); 
-						json.put("uid",uid); 
+						json.put("message","verified"); 
+//						json.put("uid",uid); 
 						out.print(json); 
 						return;
 					}
-					if(Verify.verify(user_name,email,password)==false) {
-//						System.out.println("hi this is me - 3");
+					else {
+						// not verified, send the email to verify
+						Verify.verify(email,user_name,password);
 						JSONObject json = new JSONObject();
-						json.put("status","fail");
-						json.put("message","invalid email");
+						json.put("status","success");
+						json.put("message","a verfication link is sent to the given mail id , kindly verify");
 						out.print(json); 
 						return;
 					}
