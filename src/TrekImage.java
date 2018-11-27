@@ -1,21 +1,36 @@
 
 
+import java.awt.FlowLayout;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Base64;
 
+import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+//import com.sun.org.apache.xml.internal.security.utils.Base64;
+//import org.apache.commons.codec.binary.Base64;
+
 
 
 
@@ -55,7 +70,35 @@ public class TrekImage extends HttpServlet {
 			ResultSet rs=stmt.executeQuery();
 			if(rs.next()) {
 				obj.put("status", "success");
-				obj.put("img_data", rs.getString(1));
+				String s=rs.getString(1);
+//				byte[] decodedHex = Hex.decodeHex(s);
+				int len = s.length()-3;
+			    byte[] data = new byte[len / 2];
+			    for (int i = 3; i < len; i += 2) {
+			        data[(i-3) / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+			                             + Character.digit(s.charAt(i+1), 16));
+			    }
+				byte[] encodedHexB64 = Base64.getEncoder().encode(data);
+				
+				/////////////
+				File file = new File("/home/shubham/Documents/SEM5/Database/Project/images/sameer_hills.jpg");
+				BufferedImage image = null; 
+				byte[] dd=null;
+			    try
+			    {
+			        image = ImageIO.read(file);
+			        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			        ImageIO.write(image, "jpg", baos);
+			        byte[] bytes = baos.toByteArray();
+			        System.out.println();
+			        dd = Base64.getEncoder().encode(bytes);
+			    
+			    } 
+			    catch (IOException e) 
+			    {
+			        e.printStackTrace();
+			    }////////////
+				obj.put("img_data", dd);
 				obj.put("extension", rs.getString(2)); 
 			}
 			else {

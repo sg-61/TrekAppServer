@@ -45,10 +45,43 @@ public class Verify {
 		String[] toEmails = {email};
 //		System.out.println(email);
 		String emailSubject = "TrekApp Verification";
-		String emailBody = "If you initiated the request to signup for trekApp, then please click the followed link or else ignore\nhttp:http://10.196.7.216:8080/TrekAppServer/Signup?user_name="+user_name+"&email="+email+"&password="+password+"&verified=1";
+		String qq=""; 
+		for(int i=0;i<email.length();i++) {
+			char c=email.charAt(i);
+			int a=(int) c ; 
+			String s=Integer.toString(a); 
+			while(s.length()<3) {
+				s="0"+s; 
+			}
+			qq+=s; 
+		}
+		String brk="043";
+		qq+=brk; 
+		for(int i=0;i<password.length();i++) {
+			char c=password.charAt(i);
+			int a=(int) c ; 
+			String s=Integer.toString(a); 
+			while(s.length()<3) {
+				s="0"+s; 
+			}
+			qq+=s; 
+		}
+		qq+=brk; 
+		for(int i=0;i<user_name.length();i++) {
+			char c=user_name.charAt(i);
+			int a=(int) c ; 
+			String s=Integer.toString(a); 
+			while(s.length()<3) {
+				s="0"+s; 
+			}
+			qq+=s; 
+		}
+		qq+=brk; 
+		qq+="049"; 
+		String emailBody = "If you initiated the request to signup for trekApp, then please click the followed link or else ignore\nhttp://"+Config.ip+":8080/TrekAppServer/Signup?query="+qq;
 		mailSession = Session.getInstance(emailProperties,new javax.mail.Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(Config.user_mail, Config.dd);
+                return new PasswordAuthentication(Config.dd,Config.user_mail);
             }
         });
 //		System.out.println(Config.dd);

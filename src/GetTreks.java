@@ -44,7 +44,7 @@ public class GetTreks extends HttpServlet {
 			response.getWriter().print(Helper.errorJson("Not logged in").toString());
 			return;
 		}*/
-		String query = "select name, trek_id from trek;";
+		String query = "select * from trek;";
 		ArrayNode json = null;
 		try (Connection conn = DriverManager.getConnection(Config.url, Config.user, Config.password))
         {

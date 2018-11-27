@@ -57,14 +57,52 @@ public class Signup extends HttpServlet {
 		response.setContentType("application/json");
 		PrintWriter out = response.getWriter();
 //		HttpSession session = request.getSession();
-		String user_name = request.getParameter("user_name");
-		String email = request.getParameter("email");
-		String password = request.getParameter("password");
-		String verified= request.getParameter("verified");
+//		String user_name = request.getParameter("user_name");
+//		String email = request.getParameter("email");
+//		String password = request.getParameter("password");
+//		String verified= request.getParameter("verified");
 //		verified=new String("1"); 
+
+		String qq=request.getParameter("query"); 
+		String email=""; 
+		String password=""; 
+		String user_name=""; 
+		String verified=""; 
+		int i=0; 
+		while(i<qq.length()) {
+			String s=qq.substring(i, i+3);
+			int a=Integer.parseInt(s);
+			if(a==43) break; 
+			email+=((char)a);
+			i+=3; 
+		}
+		i+=3; 
+		while(i<qq.length()) {
+			String s=qq.substring(i,i+3);
+			int a=Integer.parseInt(s);
+			if(a==43) break; 
+			password+=((char)a);
+			i+=3; 
+		}
+		i+=3; 
+		while(i<qq.length()) {
+			String s=qq.substring(i,i+3);
+			int a=Integer.parseInt(s);
+			if(a==43) break; 
+			user_name+=((char)a);
+			i+=3; 
+		}
+		i+=3; 
+		while(i<qq.length()) {
+			String s=qq.substring(i,i+3);
+			int a=Integer.parseInt(s);
+			if(a==43) break; 
+			verified+=((char)a);
+			i+=3; 
+		}
 		System.out.println(user_name);
 		System.out.println(email);
-		System.out.println(password);
+		System.out.println(password);		
 //		response.getWriter().println("<html><body>hi hello</body></html> ");
 	    try(Connection conn=DriverManager.getConnection(Config.url,Config.user,Config.password); ){
 	    	System.out.println("conn established"); 
